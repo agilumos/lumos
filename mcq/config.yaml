@@ -1,0 +1,59 @@
+# ============================================================
+# MCQ Pipeline Configuration
+# ============================================================
+# All paths and hyperparameters are managed here.
+# Override any value via CLI: --config config.yaml
+# ============================================================
+
+# ------------------------------------------------------------------
+# Paths
+# ------------------------------------------------------------------
+paths:
+  # --- Input: Knowledge Graph sources ---
+  # DBpedia: directory containing mappingbased-objects_lang=en.ttl.bz2
+  kg_dir: "/data/kg/dbpedia"
+
+  # OpenAlex: glob pattern for concept snapshot .gz files
+  openalex_glob: "/data/openalex-snapshot/data/concepts/**/*.gz"
+
+  # Text corpus
+  web_corpus: "/data/corpus/sampled_web.jsonl"
+  academic_corpus_dir: "/data/corpus/pes2o"          # scans pes2o-*.json files
+
+  # --- Output root ---
+  out_dir: "./output"
+  # Subdirectories (auto-created):
+  #   {out_dir}/entities/   <- entity JSON files
+  #   {out_dir}/chunks/     <- chunk + freq files
+  #   {out_dir}/splits/     <- WH/WT/AH/AT splits
+  #   {out_dir}/scored/     <- CE-scored chunks
+
+# ------------------------------------------------------------------
+# Entity extraction
+# ------------------------------------------------------------------
+entity:
+  # OpenAlex concept levels to include
+  openalex_levels: [2, 3, 4, 5]
+
+# ------------------------------------------------------------------
+# Chunk extraction  (chunk_ac)
+# ------------------------------------------------------------------
+chunk:
+  window: 600           # character radius around entity mention
+  topk_chunks: 50       # top-k chunks kept per entity
+  min_alias_len: 4      # minimum normalized entity string length
+  log_every_lines: 10000
+  build_offsets: false  # set true to write .offsets.u64 sidecar files
+  offsets_suffix: ".offsets.u64"
+
+# ------------------------------------------------------------------
+# Chunk scoring  (chunk_scoring)
+# ------------------------------------------------------------------
+scoring:
+  model: "cross-encoder/ms-marco-MiniLM-L-12-v2"
+  device: null          # null = auto-detect; or "cuda" / "cpu"
+  cuda_visible_devices: null   # null = don't restrict; or e.g. "0,1"
+  batch_size: 64
+  max_chunks: null      # null = no limit per entity
+  flush_every: 200
+  bad_entities_file: null   # optional path to bad_entities.txt
